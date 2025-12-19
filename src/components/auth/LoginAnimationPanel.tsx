@@ -77,8 +77,8 @@ export function LoginAnimationPanel() {
 				<DotGrid
 					dotSize={10}
 					gap={15}
-					baseColor="#5227FF"
-					activeColor="#5227FF"
+					baseColor="#FF8C42"
+					activeColor="#FF8C42"
 					proximity={120}
 					shockRadius={250}
 					shockStrength={5}
