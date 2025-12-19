@@ -25,8 +25,8 @@ import {
 } from "@/lib/auth/authCoreConfig";
 
 const cookieDomainByEnv: Record<"dev" | "prod", string> = {
-	dev: ".janovix.workers.dev",
-	prod: ".janovix.ai",
+	dev: ".boletrics.workers.dev",
+	prod: ".boletrics.ai",
 };
 
 const normalizeDate = (value?: string | Date) => {
@@ -218,7 +218,7 @@ export const AccountView = () => {
 							</p>
 							<p className="text-muted-foreground">
 								{environment === "dev"
-									? "Todas las aplicaciones bajo *.janovix.workers.dev"
+									? "Todas las aplicaciones bajo *.boletrics.workers.dev"
 									: "Solo aplicaciones bajo el dominio actual"}
 							</p>
 						</div>

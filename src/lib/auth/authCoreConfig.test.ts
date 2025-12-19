@@ -41,8 +41,9 @@ describe("authCoreConfig", () => {
 	});
 
 	describe("getAuthEnvironment", () => {
-		it("returns prod for .janovix.ai URL", () => {
-			process.env.NEXT_PUBLIC_AUTH_SERVICE_URL = "https://auth-svc.janovix.ai";
+		it("returns prod for .boletrics.ai URL", () => {
+			process.env.NEXT_PUBLIC_AUTH_SERVICE_URL =
+				"https://auth-svc.boletrics.ai";
 			global.window = { location: {} } as unknown as Window & typeof globalThis;
 			const env = getAuthEnvironment();
 			expect(env).toBe("prod");

@@ -17,7 +17,7 @@ const getRedirect = (
 };
 
 export const metadata: Metadata = {
-	title: "Crear cuenta | Janovix Auth",
+	title: "Crear cuenta | Boletrics Auth",
 	description:
 		"Registra usuarios usando los endpoints /api/auth/* de auth-core administrados por Better Auth.",
 };

@@ -2,7 +2,7 @@ import { RecoverView } from "@/components/auth/RecoverView";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "Recuperar acceso | Janovix Auth",
+	title: "Recuperar acceso | Boletrics Auth",
 	description:
 		"Solicita un enlace de restablecimiento de contraseña en auth-core.",
 };

@@ -14,7 +14,7 @@ import { getDefaultRedirectUrl } from "@/lib/auth/redirectConfig";
  * in the page components. This prevents the "blink" effect where users briefly
  * see protected content before being redirected.
  *
- * For cross-subdomain cookies (like .janovix.workers.dev), the cookie will be
+ * For cross-subdomain cookies (like .boletrics.workers.dev), the cookie will be
  * available to this middleware since it's set on the parent domain.
  *
  * @see https://www.better-auth.com/docs/integrations/next
