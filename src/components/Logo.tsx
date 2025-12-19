@@ -22,8 +22,9 @@ function Logo({
 	const theme = forceTheme || resolvedTheme || "light";
 
 	// Use theme-aware colors that are visible in both light and dark modes
-	const textColor = theme === "dark" ? "text-foreground" : "text-foreground";
-	const iconColor = theme === "dark" ? "text-primary" : "text-primary";
+	// text-foreground and text-primary adapt automatically to the theme
+	const textColor = "text-foreground";
+	const iconColor = "text-primary";
 
 	return (
 		<div className={`flex items-center gap-2 ${className || ""}`}>
