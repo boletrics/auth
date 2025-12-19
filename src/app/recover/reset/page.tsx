@@ -15,7 +15,7 @@ const getToken = (params?: Record<string, string | string[] | undefined>) => {
 };
 
 export const metadata: Metadata = {
-	title: "Restablecer contraseña | Janovix Auth",
+	title: "Restablecer contraseña | Boletrics Auth",
 	description:
 		"Define una nueva contraseña usando el token de restablecimiento emitido por auth-core.",
 };

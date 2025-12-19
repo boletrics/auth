@@ -35,7 +35,7 @@ export const WithSession: Story = {
 						user: {
 							id: "story-user",
 							name: "Usuario Storybook",
-							email: "storybook@janovix.com",
+							email: "storybook@boletrics.com",
 							image: null,
 							createdAt: new Date(),
 							updatedAt: new Date(),

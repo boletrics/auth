@@ -6,7 +6,7 @@ type PageProps = {
 };
 
 export const metadata: Metadata = {
-	title: "Janovix Auth · Better Auth Reference",
+	title: "Boletrics Auth · Better Auth Reference",
 	description:
 		"UI de autenticación que consume auth-core vía Better Auth: login, registro, cierre de sesión y vista de cuenta basados en cookies HttpOnly.",
 };

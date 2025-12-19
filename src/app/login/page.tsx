@@ -34,7 +34,7 @@ const getResetSuccessMessage = (
 };
 
 export const metadata: Metadata = {
-	title: "Iniciar sesión | Janovix Auth",
+	title: "Iniciar sesión | Boletrics Auth",
 	description:
 		"Conecta con auth-core usando la librería Better Auth y cookies HttpOnly.",
 };
