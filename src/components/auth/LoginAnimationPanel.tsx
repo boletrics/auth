@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import LightPillar from "../LightPillar";
+import DotGrid from "../DotGrid";
 import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 
 /**
  * LoginAnimationPanel component that:
- * - Shows LightPillar animation in the right column on larger screens
+ * - Shows DotGrid animation in the right column on larger screens
  * - Only renders client-side with smooth fade-in
  * - Shows on iOS devices (if high-end or has enough performance)
  * - Hides on low-powered devices and when reduced motion is preferred
@@ -74,18 +74,16 @@ export function LoginAnimationPanel() {
 
 			{/* Animated background - full screen */}
 			<div className="absolute inset-0 w-full h-full">
-				<LightPillar
-					topColor="#5227FF"
-					bottomColor="#FF9FFC"
-					intensity={1.0}
-					rotationSpeed={0.3}
-					glowAmount={0.005}
-					pillarWidth={3.0}
-					pillarHeight={0.4}
-					noiseIntensity={0.5}
-					pillarRotation={0}
-					interactive={false}
-					mixBlendMode="normal"
+				<DotGrid
+					dotSize={10}
+					gap={15}
+					baseColor="#5227FF"
+					activeColor="#5227FF"
+					proximity={120}
+					shockRadius={250}
+					shockStrength={5}
+					resistance={750}
+					returnDuration={1.5}
 				/>
 			</div>
 		</div>
