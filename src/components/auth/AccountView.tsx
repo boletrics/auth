@@ -26,7 +26,7 @@ import {
 
 const cookieDomainByEnv: Record<"dev" | "prod", string> = {
 	dev: ".boletrics.workers.dev",
-	prod: ".boletrics.ai",
+	prod: ".boletrics.com",
 };
 
 const normalizeDate = (value?: string | Date) => {

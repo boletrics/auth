@@ -41,9 +41,9 @@ describe("authCoreConfig", () => {
 	});
 
 	describe("getAuthEnvironment", () => {
-		it("returns prod for .boletrics.ai URL", () => {
+		it("returns prod for .boletrics.com URL", () => {
 			process.env.NEXT_PUBLIC_AUTH_SERVICE_URL =
-				"https://auth-svc.boletrics.ai";
+				"https://auth-svc.boletrics.com";
 			global.window = { location: {} } as unknown as Window & typeof globalThis;
 			const env = getAuthEnvironment();
 			expect(env).toBe("prod");
