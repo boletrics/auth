@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/boletrics/auth/compare/v1.2.0...v1.2.1) (2025-12-21)
+
+
+### Bug Fixes
+
+* align auth flows with better-auth client ([42d110b](https://github.com/boletrics/auth/commit/42d110b5547704df6b01ed08a532f51a7c2790e0))
+
 # [1.2.0](https://github.com/boletrics/auth/compare/v1.1.0...v1.2.0) (2025-12-21)
 
 
