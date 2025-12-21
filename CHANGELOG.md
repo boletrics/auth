@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/boletrics/auth/compare/v1.0.0...v1.1.0) (2025-12-21)
+
+
+### Features
+
+* add session validation middleware matching auth pattern ([274e9c4](https://github.com/boletrics/auth/commit/274e9c4fb413e04be4a6cb42463d6134fe7acc50))
+
 # 1.0.0 (2025-12-19)
 
 
