@@ -33,9 +33,7 @@ export const getAuthCoreBaseUrl = (): string => {
  * @returns "dev" or "prod" based on the URL pattern
  */
 export const getAuthEnvironment = (): "dev" | "prod" => {
-	const baseUrl = getAuthCoreBaseUrl();
-	if (baseUrl.includes(".boletrics.com")) {
-		return "prod";
-	}
+	// For boletrics, we only use workers.dev domain for all environments
+	// so we always return "dev" as there's no production domain distinction
 	return "dev";
 };

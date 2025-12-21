@@ -41,12 +41,12 @@ describe("authCoreConfig", () => {
 	});
 
 	describe("getAuthEnvironment", () => {
-		it("returns prod for .boletrics.com URL", () => {
+		it("returns dev for all URLs (boletrics only uses workers.dev domain)", () => {
 			process.env.NEXT_PUBLIC_AUTH_SERVICE_URL =
-				"https://auth-svc.boletrics.com";
+				"https://auth-svc.boletrics.workers.dev";
 			global.window = { location: {} } as unknown as Window & typeof globalThis;
 			const env = getAuthEnvironment();
-			expect(env).toBe("prod");
+			expect(env).toBe("dev");
 		});
 
 		it("returns dev for .workers.dev URL", () => {
