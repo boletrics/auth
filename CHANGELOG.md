@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/boletrics/auth/compare/v1.2.1...v1.2.2) (2025-12-21)
+
+
+### Bug Fixes
+
+* add turnstile to recover flow ([d0aebf8](https://github.com/boletrics/auth/commit/d0aebf89c2355699bfe50fe643b78b9adb719188))
+
 ## [1.2.1](https://github.com/boletrics/auth/compare/v1.2.0...v1.2.1) (2025-12-21)
 
 
