@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/boletrics/auth/compare/v1.1.0...v1.2.0) (2025-12-21)
+
+
+### Features
+
+* add email verification flow and update redirect URL to tickets ([01a5fdf](https://github.com/boletrics/auth/commit/01a5fdffd5739bf3aa880c31bd19048571a13d28))
+
 # [1.1.0](https://github.com/boletrics/auth/compare/v1.0.0...v1.1.0) (2025-12-21)
 
 
