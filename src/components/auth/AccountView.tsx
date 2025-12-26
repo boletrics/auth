@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "@/lib/auth/authActions";
+import { signOut, updateProfile } from "@/lib/auth/authActions";
 import { useAuthSession } from "@/lib/auth/useAuthSession";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -19,6 +19,7 @@ import {
 	CardTitle,
 	Spinner,
 } from "@/components/ui";
+import { AvatarUpload } from "@/components/ui/avatar-upload";
 import {
 	getAuthCoreBaseUrl,
 	getAuthEnvironment,
@@ -128,12 +129,19 @@ export const AccountView = () => {
 					</CardHeader>
 					<CardContent className="grid gap-6 md:grid-cols-2">
 						<div className="space-y-3 text-sm">
-							<div className="flex items-center gap-2">
-								<User
-									className="h-4 w-4 text-muted-foreground"
-									aria-hidden="true"
+							<div className="flex items-start gap-4">
+								<AvatarUpload
+									value={data.user.image ?? undefined}
+									onChange={async (url) => {
+										if (url) {
+											await updateProfile({ image: url });
+										}
+									}}
+									userId={data.user.id}
+									userName={data.user.name}
+									size={64}
 								/>
-								<div>
+								<div className="flex-1">
 									<p className="font-medium text-foreground">
 										{data.user.name}
 									</p>

@@ -416,3 +416,51 @@ export async function verifyEmailWithOtp(
 		};
 	}
 }
+
+/**
+ * Updates the current user's profile.
+ *
+ * Uses Better Auth client's updateUser method.
+ *
+ * @param updates - The fields to update (name, image)
+ */
+export async function updateProfile(updates: {
+	name?: string;
+	image?: string;
+}): Promise<AuthResult<Session>> {
+	try {
+		const result = await authClient.updateUser(updates);
+
+		if (result.error) {
+			return {
+				success: false,
+				data: null,
+				error: new Error(result.error.message || "Update failed"),
+			};
+		}
+
+		// Refresh session to get updated user data
+		const sessionResult = await authClient.getSession();
+		if (sessionResult.data) {
+			const session = toSession(sessionResult.data);
+			setSession(session);
+			return {
+				success: true,
+				data: session,
+				error: null,
+			};
+		}
+
+		return {
+			success: true,
+			data: null,
+			error: null,
+		};
+	} catch (err) {
+		return {
+			success: false,
+			data: null,
+			error: err instanceof Error ? err : new Error("Update failed"),
+		};
+	}
+}
