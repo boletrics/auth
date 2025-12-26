@@ -1,63 +1,106 @@
-# Next.js Framework Starter
+# Boletrics Auth
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/algtools/next-template)
+The **Auth** application is the authentication frontend for Boletrics, built with [Next.js](https://nextjs.org/) and deployed on [Cloudflare Workers](https://workers.cloudflare.com/) via [OpenNext](https://opennext.js.org/).
 
-<!-- dash-content-start -->
+## Overview
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+This application handles all user authentication flows for the Boletrics platform:
 
-This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
+- **Login** - Email/password authentication with remember me option
+- **Sign Up** - New user registration with email verification
+- **Email Verification** - OTP-based email verification flow
+- **Password Recovery** - Forgot password and reset functionality
+- **Account Management** - View and manage user session/profile
+- **OAuth Support** - Social login integration (via Better Auth)
+- **Turnstile Protection** - Cloudflare Turnstile bot protection
 
-<!-- dash-content-end -->
+## Tech Stack
 
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-template
-```
-
-A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
+- **Framework**: Next.js 16 with React 19
+- **Styling**: Tailwind CSS 4 with shadcn/ui components
+- **Form Handling**: React Hook Form + Zod validation (v4)
+- **Animation**: GSAP + Three.js for visual effects
+- **Authentication**: Better Auth client
+- **Bot Protection**: Cloudflare Turnstile (@marsidev/react-turnstile)
+- **Testing**: Vitest + React Testing Library
+- **Visual Testing**: Storybook
+- **Deployment**: Cloudflare Workers via OpenNext
 
 ## Getting Started
 
-First, run:
+### Prerequisites
+
+- Node.js 20+
+- pnpm 10+
+
+### Installation
 
 ```bash
-npm install
-# or
-yarn install
-# or
 pnpm install
-# or
-bun install
 ```
 
-Then run the development server (using the package manager of your choice):
+### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+| Command             | Description                                    |
+| :------------------ | :--------------------------------------------- |
+| `pnpm dev`          | Start development server on port 3000          |
+| `pnpm build`        | Build for production                           |
+| `pnpm preview`      | Preview production build locally               |
+| `pnpm deploy`       | Build and deploy to Cloudflare Workers         |
+| `pnpm lint`         | Run ESLint                                     |
+| `pnpm format`       | Format code with Prettier                      |
+| `pnpm format:check` | Check code formatting                          |
+| `pnpm typecheck`    | Run TypeScript type checking                   |
+| `pnpm test`         | Run tests with coverage                        |
+| `pnpm test:watch`   | Run tests in watch mode                        |
+| `pnpm storybook`    | Start Storybook on port 6006                   |
+| `pnpm ci:check`     | Run all CI checks (format, lint, types, tests) |
 
-## Deploying To Production
+## Project Structure
 
-| Command                           | Action                                       |
-| :-------------------------------- | :------------------------------------------- |
-| `npm run build`                   | Build your production site                   |
-| `npm run preview`                 | Preview your build locally, before deploying |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
-| `npm wrangler tail`               | View real-time logs for all Workers          |
+```
+auth/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx            # Redirects to /login
+│   │   ├── login/              # Login page
+│   │   ├── signup/             # Registration page
+│   │   ├── verify/             # Email verification
+│   │   ├── recover/            # Password recovery
+│   │   └── account/            # Account management
+│   ├── components/
+│   │   ├── views/              # Page view components (login, signup, etc.)
+│   │   ├── forms/              # Form components
+│   │   └── ui/                 # shadcn/ui components
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/
+│   │   ├── auth/               # Better Auth client configuration
+│   │   └── utils.ts            # Utility functions
+│   ├── stories/                # Storybook stories
+│   └── test/                   # Test utilities
+├── public/                     # Static assets
+└── wrangler.jsonc              # Cloudflare Workers configuration
+```
 
-## Learn More
+## Authentication Flow
 
-To learn more about Next.js, take a look at the following resources:
+1. User navigates to `/login` or `/signup`
+2. Turnstile verification (bot protection)
+3. Credentials submitted to `auth-svc` via Better Auth
+4. On success, user is redirected to the originating application
+5. Session is managed via cookies across all Boletrics applications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Related Services
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- **auth-svc** - Authentication backend service (Better Auth server)
+- **tickets** - Customer-facing ticketing portal
+- **partner** - Organization dashboard
+- **admin** - Platform administration dashboard
