@@ -328,6 +328,7 @@ export async function resetPassword(
  *
  * @param email - The email address to send the verification link to
  * @param callbackURL - The URL to redirect to after verification (defaults to login page)
+ * @deprecated Use sendVerificationOtp instead for OTP-based verification
  */
 export async function sendVerificationEmail(
 	email: string,
@@ -367,6 +368,103 @@ export async function sendVerificationEmail(
 				err instanceof Error
 					? err
 					: new Error("Failed to send verification email"),
+		};
+	}
+}
+
+/**
+ * OTP verification type options.
+ */
+export type OtpType = "email-verification" | "sign-in" | "forget-password";
+
+/**
+ * Sends a verification OTP to the specified email address.
+ *
+ * Uses Better Auth client's emailOtp.sendVerificationOtp method.
+ * This keeps users in the app during verification, preserving redirectTo.
+ * See: https://www.better-auth.com/docs/plugins/email-otp
+ *
+ * @param email - The email address to send the OTP to
+ * @param type - The type of OTP (defaults to email-verification)
+ */
+export async function sendVerificationOtp(
+	email: string,
+	type: OtpType = "email-verification",
+): Promise<AuthResult<{ message: string }>> {
+	try {
+		const result = await authClient.emailOtp.sendVerificationOtp({
+			email,
+			type,
+		});
+
+		if (result.error) {
+			return {
+				success: false,
+				data: null,
+				error: new Error(result.error.message || "Failed to send OTP"),
+			};
+		}
+
+		return {
+			success: true,
+			data: { message: "OTP sent successfully" },
+			error: null,
+		};
+	} catch (err) {
+		return {
+			success: false,
+			data: null,
+			error: err instanceof Error ? err : new Error("Failed to send OTP"),
+		};
+	}
+}
+
+/**
+ * Verifies the user's email using an OTP code.
+ *
+ * Uses Better Auth client's emailOtp.verifyEmail method.
+ * On success, the user's email is marked as verified.
+ * See: https://www.better-auth.com/docs/plugins/email-otp
+ *
+ * @param email - The email address being verified
+ * @param otp - The OTP code entered by the user
+ */
+export async function verifyEmailWithOtp(
+	email: string,
+	otp: string,
+): Promise<AuthResult<{ message: string }>> {
+	try {
+		const result = await authClient.emailOtp.verifyEmail({
+			email,
+			otp,
+		});
+
+		if (result.error) {
+			return {
+				success: false,
+				data: null,
+				error: new Error(result.error.message || "Invalid OTP"),
+			};
+		}
+
+		// Refresh session to get updated emailVerified status
+		const sessionResult = await authClient.getSession();
+		if (sessionResult.data) {
+			const session = toSession(sessionResult.data);
+			setSession(session);
+		}
+
+		return {
+			success: true,
+			data: { message: "Email verified successfully" },
+			error: null,
+		};
+	} catch (err) {
+		return {
+			success: false,
+			data: null,
+			error:
+				err instanceof Error ? err : new Error("Email verification failed"),
 		};
 	}
 }
