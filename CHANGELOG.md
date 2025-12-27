@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/boletrics/auth/compare/v1.2.2...v1.3.0) (2025-12-27)
+
+
+### Features
+
+* add avatar upload functionality and update user profile image in AccountView ([6cd09cd](https://github.com/boletrics/auth/commit/6cd09cd9a6534d80368a111d9400183a608bcd03))
+* implement OTP-based email verification flow ([bb120d6](https://github.com/boletrics/auth/commit/bb120d6ee18e95735cf1998534ead60132ea03ef))
+
 ## [1.2.2](https://github.com/boletrics/auth/compare/v1.2.1...v1.2.2) (2025-12-21)
 
 
