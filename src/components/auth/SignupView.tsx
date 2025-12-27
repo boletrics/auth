@@ -2,7 +2,8 @@
 
 import {
 	signUp as localSignUp,
-	sendVerificationEmail,
+	sendVerificationOtp,
+	verifyEmailWithOtp,
 	type SignUpCredentials,
 	type AuthResult,
 } from "@/lib/auth/authActions";
@@ -12,6 +13,7 @@ import {
 	Building2,
 	CheckCircle2,
 	Circle,
+	Loader2,
 	Lock,
 	Mail,
 	ShieldCheck,
@@ -20,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -50,6 +52,11 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@/components/ui/field";
+import {
+	InputOTP,
+	InputOTPGroup,
+	InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { getAuthErrorMessage } from "@/lib/auth/errorMessages";
 
 const passwordSchema = z
@@ -85,7 +92,7 @@ const signupSchema = z
 type SignupValues = z.infer<typeof signupSchema>;
 type SignUpFn = (credentials: SignUpCredentials) => Promise<AuthResult>;
 
-const VERIFICATION_REDIRECT_DELAY_SECONDS = 10;
+const OTP_LENGTH = 6;
 
 export const SignupView = ({
 	redirectTo,
@@ -104,7 +111,11 @@ export const SignupView = ({
 	const [isResending, setIsResending] = useState(false);
 	const [resendMessage, setResendMessage] = useState<string | null>(null);
 	const [resendError, setResendError] = useState<string | null>(null);
-	const [redirectCountdown, setRedirectCountdown] = useState<number>(0);
+
+	// OTP verification state
+	const [otpValue, setOtpValue] = useState("");
+	const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+	const [otpError, setOtpError] = useState<string | null>(null);
 
 	// Always use dark theme for logo to show white letters (matching previous behavior)
 	const logoTheme = "dark" as const;
@@ -117,24 +128,6 @@ export const SignupView = ({
 			}
 		};
 	}, []);
-
-	// Countdown effect for verification redirect
-	useEffect(() => {
-		if (!needsVerification || redirectCountdown <= 0) return;
-
-		const timer = setInterval(() => {
-			setRedirectCountdown((prev) => {
-				if (prev <= 1) {
-					// Redirect to login when countdown reaches 0
-					router.push("/login");
-					return 0;
-				}
-				return prev - 1;
-			});
-		}, 1000);
-
-		return () => clearInterval(timer);
-	}, [needsVerification, redirectCountdown, router]);
 
 	const form = useForm<SignupValues>({
 		resolver: zodResolver(signupSchema),
@@ -190,13 +183,21 @@ export const SignupView = ({
 		// Check if email verification is needed (emailVerified can be false, null, or undefined)
 		const isEmailVerified = result.data?.user.emailVerified === true;
 		if (!isEmailVerified) {
+			// Send OTP for email verification
+			const otpResult = await sendVerificationOtp(email, "email-verification");
+			if (!otpResult.success) {
+				setServerError(
+					otpResult.error?.message ||
+						"Error al enviar el código de verificación",
+				);
+				return;
+			}
+
 			setNeedsVerification(true);
 			setUserEmail(email);
 			setSuccessMessage(
-				"Se ha enviado un email de verificación a tu correo. Deberás verificar tu correo antes de iniciar sesión.",
+				"Hemos enviado un código de 6 dígitos a tu correo. Ingrésalo a continuación para verificar tu cuenta.",
 			);
-			// Start countdown to redirect to login
-			setRedirectCountdown(VERIFICATION_REDIRECT_DELAY_SECONDS);
 			return;
 		}
 
@@ -206,7 +207,39 @@ export const SignupView = ({
 		window.location.href = getAuthRedirectUrl(redirectTo);
 	};
 
-	const handleResendVerification = async () => {
+	// Handle OTP verification
+	const handleVerifyOtp = useCallback(async () => {
+		if (!userEmail || otpValue.length !== OTP_LENGTH) {
+			return;
+		}
+
+		setIsVerifyingOtp(true);
+		setOtpError(null);
+
+		const result = await verifyEmailWithOtp(userEmail, otpValue);
+
+		if (!result.success) {
+			setOtpError(
+				result.error?.message || "Código incorrecto. Inténtalo de nuevo.",
+			);
+			setIsVerifyingOtp(false);
+			return;
+		}
+
+		// Verification successful - redirect to the original destination
+		setSuccessMessage("¡Correo verificado! Redirigiendo...");
+		// Use window.location for external redirects (cross-origin)
+		window.location.href = getAuthRedirectUrl(redirectTo);
+	}, [userEmail, otpValue, redirectTo]);
+
+	// Auto-submit when OTP is complete
+	useEffect(() => {
+		if (otpValue.length === OTP_LENGTH && userEmail && !isVerifyingOtp) {
+			handleVerifyOtp();
+		}
+	}, [otpValue, userEmail, isVerifyingOtp, handleVerifyOtp]);
+
+	const handleResendOtp = async () => {
 		if (!userEmail) {
 			return;
 		}
@@ -214,20 +247,17 @@ export const SignupView = ({
 		setIsResending(true);
 		setResendMessage(null);
 		setResendError(null);
+		setOtpValue(""); // Clear current OTP
+		setOtpError(null);
 
-		const result = await sendVerificationEmail(
-			userEmail,
-			`${window.location.origin}/verify?success=true`,
-		);
+		const result = await sendVerificationOtp(userEmail, "email-verification");
 
 		if (!result.success) {
 			setResendError(
-				result.error?.message || "Error al reenviar el correo de verificación",
+				result.error?.message || "Error al reenviar el código de verificación",
 			);
 		} else {
-			setResendMessage(
-				"Correo de verificación reenviado. Revisa tu bandeja de entrada.",
-			);
+			setResendMessage("Código de verificación reenviado. Revisa tu correo.");
 		}
 
 		setIsResending(false);
@@ -260,28 +290,60 @@ export const SignupView = ({
 								<AlertDescription>{successMessage}</AlertDescription>
 							</Alert>
 							{needsVerification && userEmail ? (
-								<div className="space-y-3">
+								<div className="space-y-4">
 									<Alert>
 										<Mail className="h-4 w-4" aria-hidden="true" />
-										<AlertTitle>Verifica tu correo electrónico</AlertTitle>
+										<AlertTitle>Ingresa el código de verificación</AlertTitle>
 										<AlertDescription>
-											Hemos enviado un enlace de verificación a{" "}
+											Enviamos un código de 6 dígitos a{" "}
 											<strong>{userEmail}</strong>. Revisa tu bandeja de entrada
-											(y la carpeta de spam) y haz clic en el enlace para
-											verificar tu cuenta antes de iniciar sesión.
+											(y la carpeta de spam).
 										</AlertDescription>
 									</Alert>
+
+									{/* OTP Input */}
+									<div className="flex flex-col items-center gap-4">
+										<InputOTP
+											maxLength={OTP_LENGTH}
+											value={otpValue}
+											onChange={setOtpValue}
+											disabled={isVerifyingOtp}
+											aria-label="Código de verificación"
+										>
+											<InputOTPGroup>
+												<InputOTPSlot index={0} />
+												<InputOTPSlot index={1} />
+												<InputOTPSlot index={2} />
+												<InputOTPSlot index={3} />
+												<InputOTPSlot index={4} />
+												<InputOTPSlot index={5} />
+											</InputOTPGroup>
+										</InputOTP>
+
+										{isVerifyingOtp && (
+											<div className="flex items-center gap-2 text-sm text-muted-foreground">
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Verificando...
+											</div>
+										)}
+									</div>
+
+									{otpError && (
+										<Alert variant="destructive" role="alert">
+											<AlertDescription>{otpError}</AlertDescription>
+										</Alert>
+									)}
+
 									<Button
-										onClick={handleResendVerification}
-										disabled={isResending}
+										onClick={handleResendOtp}
+										disabled={isResending || isVerifyingOtp}
 										variant="outline"
 										className="w-full"
 									>
 										<Mail className="mr-2 h-4 w-4" />
-										{isResending
-											? "Enviando..."
-											: "Reenviar correo de verificación"}
+										{isResending ? "Enviando..." : "Reenviar código"}
 									</Button>
+
 									{resendMessage && (
 										<Alert role="status">
 											<CheckCircle2 className="h-4 w-4" aria-hidden="true" />
@@ -293,30 +355,22 @@ export const SignupView = ({
 											<AlertDescription>{resendError}</AlertDescription>
 										</Alert>
 									)}
-									{/* Countdown and redirect info */}
-									<div className="rounded-lg border border-dashed border-primary/20 bg-muted/40 p-4 text-center text-sm">
-										{redirectCountdown > 0 ? (
-											<p className="text-muted-foreground">
-												Serás redirigido al inicio de sesión en{" "}
-												<strong className="text-foreground">
-													{redirectCountdown} segundo
-													{redirectCountdown !== 1 ? "s" : ""}
-												</strong>
-											</p>
-										) : (
-											<p className="text-muted-foreground">
-												Redirigiendo al inicio de sesión...
-											</p>
-										)}
-									</div>
+
 									<div className="text-center text-sm text-muted-foreground">
-										¿Ya verificaste tu correo?{" "}
-										<Link
-											href="/login"
+										¿Necesitas cambiar tu correo?{" "}
+										<button
+											type="button"
+											onClick={() => {
+												setNeedsVerification(false);
+												setUserEmail(null);
+												setOtpValue("");
+												setOtpError(null);
+												setSuccessMessage(null);
+											}}
 											className="font-medium text-primary underline-offset-4 hover:underline"
 										>
-											Ir a iniciar sesión ahora
-										</Link>
+											Volver al formulario
+										</button>
 									</div>
 								</div>
 							) : null}

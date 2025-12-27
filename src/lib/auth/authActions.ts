@@ -321,42 +321,90 @@ export async function resetPassword(
 }
 
 /**
- * Sends an email verification link to the specified email address.
- *
- * Uses Better Auth client's sendVerificationEmail method.
- * See: https://www.better-auth.com/docs/authentication/email-verification
- *
- * @param email - The email address to send the verification link to
- * @param callbackURL - The URL to redirect to after verification (defaults to login page)
+ * OTP verification type options.
  */
-export async function sendVerificationEmail(
+export type OtpType = "email-verification" | "sign-in" | "forget-password";
+
+/**
+ * Sends a verification OTP to the specified email address.
+ *
+ * Uses Better Auth client's emailOtp.sendVerificationOtp method.
+ * This keeps users in the app during verification, preserving redirectTo.
+ * See: https://www.better-auth.com/docs/plugins/email-otp
+ *
+ * @param email - The email address to send the OTP to
+ * @param type - The type of OTP (defaults to email-verification)
+ */
+export async function sendVerificationOtp(
 	email: string,
-	callbackURL?: string,
+	type: OtpType = "email-verification",
 ): Promise<AuthResult<{ message: string }>> {
 	try {
-		const defaultCallbackURL =
-			typeof window !== "undefined"
-				? `${window.location.origin}/verify?success=true`
-				: `${process.env.NEXT_PUBLIC_AUTH_APP_URL}/verify?success=true`;
-
-		const result = await authClient.sendVerificationEmail({
+		const result = await authClient.emailOtp.sendVerificationOtp({
 			email,
-			callbackURL: callbackURL || defaultCallbackURL,
+			type,
 		});
 
 		if (result.error) {
 			return {
 				success: false,
 				data: null,
-				error: new Error(
-					result.error.message || "Failed to send verification email",
-				),
+				error: new Error(result.error.message || "Failed to send OTP"),
 			};
 		}
 
 		return {
 			success: true,
-			data: { message: "Verification email sent" },
+			data: { message: "OTP sent successfully" },
+			error: null,
+		};
+	} catch (err) {
+		return {
+			success: false,
+			data: null,
+			error: err instanceof Error ? err : new Error("Failed to send OTP"),
+		};
+	}
+}
+
+/**
+ * Verifies the user's email using an OTP code.
+ *
+ * Uses Better Auth client's emailOtp.verifyEmail method.
+ * On success, the user's email is marked as verified.
+ * See: https://www.better-auth.com/docs/plugins/email-otp
+ *
+ * @param email - The email address being verified
+ * @param otp - The OTP code entered by the user
+ */
+export async function verifyEmailWithOtp(
+	email: string,
+	otp: string,
+): Promise<AuthResult<{ message: string }>> {
+	try {
+		const result = await authClient.emailOtp.verifyEmail({
+			email,
+			otp,
+		});
+
+		if (result.error) {
+			return {
+				success: false,
+				data: null,
+				error: new Error(result.error.message || "Invalid OTP"),
+			};
+		}
+
+		// Refresh session to get updated emailVerified status
+		const sessionResult = await authClient.getSession();
+		if (sessionResult.data) {
+			const session = toSession(sessionResult.data);
+			setSession(session);
+		}
+
+		return {
+			success: true,
+			data: { message: "Email verified successfully" },
 			error: null,
 		};
 	} catch (err) {
@@ -364,9 +412,55 @@ export async function sendVerificationEmail(
 			success: false,
 			data: null,
 			error:
-				err instanceof Error
-					? err
-					: new Error("Failed to send verification email"),
+				err instanceof Error ? err : new Error("Email verification failed"),
+		};
+	}
+}
+
+/**
+ * Updates the current user's profile.
+ *
+ * Uses Better Auth client's updateUser method.
+ *
+ * @param updates - The fields to update (name, image)
+ */
+export async function updateProfile(updates: {
+	name?: string;
+	image?: string;
+}): Promise<AuthResult<Session>> {
+	try {
+		const result = await authClient.updateUser(updates);
+
+		if (result.error) {
+			return {
+				success: false,
+				data: null,
+				error: new Error(result.error.message || "Update failed"),
+			};
+		}
+
+		// Refresh session to get updated user data
+		const sessionResult = await authClient.getSession();
+		if (sessionResult.data) {
+			const session = toSession(sessionResult.data);
+			setSession(session);
+			return {
+				success: true,
+				data: session,
+				error: null,
+			};
+		}
+
+		return {
+			success: true,
+			data: null,
+			error: null,
+		};
+	} catch (err) {
+		return {
+			success: false,
+			data: null,
+			error: err instanceof Error ? err : new Error("Update failed"),
 		};
 	}
 }
